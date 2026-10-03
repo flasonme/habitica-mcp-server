@@ -90,7 +90,7 @@ npm run dev
 The server follows the MCP spec and works with any AI client that supports MCP. You can run **this public GitHub fork** directly through npx, without cloning it or using the upstream npm package:
 
 ```bash
-npx -y https://codeload.github.com/flasonme/habitica-mcp-server/tar.gz/refs/heads/main
+npx -y --allow-remote=root https://codeload.github.com/flasonme/habitica-mcp-server/tar.gz/refs/heads/main
 ```
 
 Example Claude Desktop config (supply your own credentials):
@@ -99,7 +99,7 @@ Example Claude Desktop config (supply your own credentials):
   "mcpServers": {
     "habitica-mcp-server": {
       "command": "npx",
-      "args": ["-y", "https://codeload.github.com/flasonme/habitica-mcp-server/tar.gz/refs/heads/main"],
+      "args": ["-y", "--allow-remote=root", "https://codeload.github.com/flasonme/habitica-mcp-server/tar.gz/refs/heads/main"],
       "env": {
         "HABITICA_USER_ID": "your-id",
         "HABITICA_API_TOKEN": "your-token"
@@ -108,6 +108,8 @@ Example Claude Desktop config (supply your own credentials):
   }
 }
 ```
+
+npm 12 blocks remote tarballs by default. `--allow-remote=root` permits this fork's top-level archive without enabling remote tarball dependencies. Earlier npm versions may not require this flag.
 
 The GitHub tarball command above runs this fork. `npx -y habitica-mcp-server` still runs iBreaker's upstream npm package; this fork has not been published to npm. If you need a short package name, it must first be published under a distinct npm name.
 
