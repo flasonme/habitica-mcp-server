@@ -87,13 +87,19 @@ npm run dev
 
 ### MCP client integration
 
-The server follows the MCP spec and works with any AI client that supports MCP. Use the local checkout of **this fork** (not `npx habitica-mcp-server`, which installs the upstream npm package). Example Claude Desktop config:
+The server follows the MCP spec and works with any AI client that supports MCP. You can run **this public GitHub fork** directly through npx, without cloning it or using the upstream npm package:
+
+```bash
+npx -y https://codeload.github.com/flasonme/habitica-mcp-server/tar.gz/refs/heads/main
+```
+
+Example Claude Desktop config (supply your own credentials):
 ```json
 {
   "mcpServers": {
     "habitica-mcp-server": {
-      "command": "node",
-      "args": ["/absolute/path/to/habitica-mcp-server/index.js"],
+      "command": "npx",
+      "args": ["-y", "https://codeload.github.com/flasonme/habitica-mcp-server/tar.gz/refs/heads/main"],
       "env": {
         "HABITICA_USER_ID": "your-id",
         "HABITICA_API_TOKEN": "your-token"
@@ -102,6 +108,8 @@ The server follows the MCP spec and works with any AI client that supports MCP. 
   }
 }
 ```
+
+The GitHub tarball command above runs this fork. `npx -y habitica-mcp-server` still runs iBreaker's upstream npm package; this fork has not been published to npm. If you need a short package name, it must first be published under a distinct npm name.
 
 Habitica requires an `x-client` header alongside `x-api-user` and `x-api-key`. This fork sends `<user-id>-HabiticaMCPServer` on every API request; no extra setting is needed.
 
