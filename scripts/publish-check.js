@@ -14,7 +14,7 @@ function checkFile(filePath, description) {
     console.log(`✅ ${description}: ${filePath}`);
     return true;
   } else {
-    console.log(`❌ ${description}: ${filePath} (缺失)`);
+    console.log(`❌ ${description}: ${filePath} (missing)`);
     return false;
   }
 }
@@ -24,7 +24,7 @@ function checkPackageJson() {
     const packagePath = join(rootDir, 'package.json');
     const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
     
-    console.log('\n📦 Package.json 检查:');
+    console.log('\n📦 Package.json checks:');
     
     const required = ['name', 'version', 'description', 'main', 'author', 'license'];
     let valid = true;
@@ -33,59 +33,59 @@ function checkPackageJson() {
       if (packageJson[field]) {
         console.log(`✅ ${field}: ${JSON.stringify(packageJson[field])}`);
       } else {
-        console.log(`❌ ${field}: 缺失`);
+        console.log(`❌ ${field}: missing`);
         valid = false;
       }
     });
     
-    // 检查作者信息是否需要更新
+    // Check whether author information needs updating
     if (packageJson.author && packageJson.author.name === 'Your Name') {
-      console.log(`⚠️  author.name 需要更新: ${packageJson.author.name}`);
+      console.log(`⚠️  author.name needs updating: ${packageJson.author.name}`);
       valid = false;
     }
     
-    // 检查仓库信息是否需要更新
+    // Check whether repository information needs updating
     if (packageJson.repository && packageJson.repository.url.includes('yourusername')) {
-      console.log(`⚠️  repository.url 需要更新: ${packageJson.repository.url}`);
+      console.log(`⚠️  repository.url needs updating: ${packageJson.repository.url}`);
       valid = false;
     }
     
     return valid;
   } catch (error) {
-    console.log(`❌ Package.json 解析错误: ${error.message}`);
+    console.log(`❌ Package.json parse error: ${error.message}`);
     return false;
   }
 }
 
 function main() {
-  console.log('🔍 NPM 发布前检查\n');
+  console.log('🔍 NPM prepublish checks\n');
   
   let allValid = true;
   
-  // 检查必要文件
-  console.log('📄 必要文件检查:');
-  allValid &= checkFile('package.json', 'Package 配置');
-  allValid &= checkFile('README.md', '项目文档');
-  allValid &= checkFile('LICENSE', '许可证文件');
-  allValid &= checkFile('index.js', '主入口文件');
-  allValid &= checkFile('FEATURES.md', '功能说明');
+  // Check required files
+  console.log('📄 Required file checks:');
+  allValid &= checkFile('package.json', 'Package configuration');
+  allValid &= checkFile('README.md', 'Project documentation');
+  allValid &= checkFile('LICENSE', 'License file');
+  allValid &= checkFile('index.js', 'Entry point');
+  allValid &= checkFile('FEATURES.md', 'Feature description');
   
-  // 检查 package.json 内容
+  // Check package.json contents
   allValid &= checkPackageJson();
   
-  // 检查环境
-  console.log('\n🔧 环境检查:');
-  console.log(`✅ Node.js 版本: ${process.version}`);
+  // Check environment
+  console.log('\n🔧 Environment checks:');
+  console.log(`✅ Node.js version: ${process.version}`);
   
   console.log('\n' + '='.repeat(50));
   
   if (allValid) {
-    console.log('🎉 所有检查通过！可以发布到 NPM');
-    console.log('\n📝 发布步骤:');
+    console.log('🎉 All checks passed; ready to publish to npm');
+    console.log('\n📝 Publishing steps:');
     console.log('1. npm login');
     console.log('2. npm publish');
   } else {
-    console.log('⚠️  请修复上述问题后再发布');
+    console.log('⚠️  Fix the issues above before publishing');
     process.exit(1);
   }
 }

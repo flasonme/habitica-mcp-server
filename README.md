@@ -1,6 +1,6 @@
 # Habitica MCP Server
 
-_中文文档请阅读 **[README.zh-CN.md](README.zh-CN.md)**_
+This is an English-only fork of [iBreaker's original Habitica MCP server](https://github.com/iBreaker/habitica-mcp-server). Thanks to iBreaker for the MIT-licensed foundation and original tool implementations. This fork adds Habitica's required `x-client` request header, replaces Chinese-language strings and documentation with English, and adds automated tests. The original copyright and MIT license remain in [LICENSE](LICENSE).
 
 A Model Context Protocol (MCP) server that lets AI assistants seamlessly interact with the Habitica API – create tasks, track habits, raise pets and enjoy gamified productivity.
 
@@ -30,7 +30,7 @@ A Model Context Protocol (MCP) server that lets AI assistants seamlessly interac
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20+
 - npm or yarn
 - A valid Habitica account
 
@@ -38,7 +38,7 @@ A Model Context Protocol (MCP) server that lets AI assistants seamlessly interac
 
 1. **Clone the repo**
 ```bash
-git clone https://github.com/ibreaker/habitica-mcp-server.git
+git clone https://github.com/flasonme/habitica-mcp-server.git
 cd habitica-mcp-server
 ```
 
@@ -70,11 +70,7 @@ export HABITICA_USER_ID="your-user-id"
 export HABITICA_API_TOKEN="your-api-token"
 ```
 
-**Method B: .env file**
-```bash
-HABITICA_USER_ID=your-user-id
-HABITICA_API_TOKEN=your-api-token
-```
+**Method B: pass environment variables through your MCP client** (see the config example below). A `.env` file is not loaded automatically by this server.
 
 > ⚠️ **Security tip:** never commit your API keys to version control.
 
@@ -91,22 +87,23 @@ npm run dev
 
 ### MCP client integration
 
-The server follows the MCP spec and works with any AI client that supports MCP. Example Claude Desktop config:
+The server follows the MCP spec and works with any AI client that supports MCP. Use the local checkout of **this fork** (not `npx habitica-mcp-server`, which installs the upstream npm package). Example Claude Desktop config:
 ```json
 {
   "mcpServers": {
     "habitica-mcp-server": {
-      "command": "npx",
-      "args": ["-y", "habitica-mcp-server"],
+      "command": "node",
+      "args": ["/absolute/path/to/habitica-mcp-server/index.js"],
       "env": {
         "HABITICA_USER_ID": "your-id",
-        "HABITICA_API_TOKEN": "your-token",
-        "MCP_LANG": "en"  // or zh-CN
+        "HABITICA_API_TOKEN": "your-token"
       }
     }
   }
 }
 ```
+
+Habitica requires an `x-client` header alongside `x-api-user` and `x-api-key`. This fork sends `<user-id>-HabiticaMCPServer` on every API request; no extra setting is needed.
 
 ### Example dialogue
 ```
@@ -267,7 +264,7 @@ AI:   "Great job! The workout is logged."
 **Issue**: Server startup failed
 ```
 Solution: 
-1. Check Node.js version is 18+
+1. Check Node.js version is 20+
 2. Confirm environment variables are set correctly
 3. Verify API credentials are valid
 ```
@@ -321,6 +318,7 @@ This project is open source under the MIT License - see the [LICENSE](LICENSE) f
 
 ## 🌟 Acknowledgments
 
+- Special thanks to [iBreaker](https://github.com/iBreaker/habitica-mcp-server) for creating and sharing the original Habitica MCP server under the MIT license. This fork builds on that work; it is not a from-scratch implementation.
 - Thanks to [Habitica](https://habitica.com) for providing an excellent API
 - Thanks to [Anthropic](https://anthropic.com) for the MCP protocol
 - Thanks to all contributors and users for their support

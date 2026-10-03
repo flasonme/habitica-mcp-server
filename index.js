@@ -8,36 +8,23 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-import axios from 'axios';
 import { z } from 'zod';
-import { setLanguage, t } from './i18n.js';
+import { createHabiticaClient } from './habitica-client.js';
 
-// Habitica API 基础配置
-const HABITICA_API_BASE = 'https://habitica.com/api/v3';
-
-// 验证环境变量
+// Validate environment variables
 const HABITICA_USER_ID = process.env.HABITICA_USER_ID;
 const HABITICA_API_TOKEN = process.env.HABITICA_API_TOKEN;
 
-// Detect language (default EN)
-setLanguage(process.env.MCP_LANG || process.env.LANG || 'en');
 
 if (!HABITICA_USER_ID || !HABITICA_API_TOKEN) {
-  console.error(t('Error: Please set HABITICA_USER_ID and HABITICA_API_TOKEN environment variables', '错误: 请设置 HABITICA_USER_ID 和 HABITICA_API_TOKEN 环境变量'));
+  console.error('Error: Please set HABITICA_USER_ID and HABITICA_API_TOKEN environment variables');
   process.exit(1);
 }
 
-// 创建 Habitica API 客户端
-const habiticaClient = axios.create({
-  baseURL: HABITICA_API_BASE,
-  headers: {
-    'x-api-user': HABITICA_USER_ID,
-    'x-api-key': HABITICA_API_TOKEN,
-    'Content-Type': 'application/json',
-  },
-});
+// Habitica API client
+const habiticaClient = createHabiticaClient(HABITICA_USER_ID, HABITICA_API_TOKEN);
 
-// 创建 MCP 服务器
+// Create MCP server
 const server = new Server(
   {
     name: 'habitica-mcp-server',
@@ -50,11 +37,11 @@ const server = new Server(
   }
 );
 
-// 工具定义
+// Tool definitions
 const tools = [
   {
     name: 'get_user_profile',
-    description: t('Get user profile', '获取用户档案信息'),
+    description: 'Get user profile',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -62,46 +49,46 @@ const tools = [
   },
   {
     name: 'get_tasks',
-    description: t('Get tasks list', '获取任务列表'),
+    description: 'Get tasks list',
     inputSchema: {
       type: 'object',
       properties: {
         type: {
           type: 'string',
           enum: ['habits', 'dailys', 'todos', 'rewards'],
-          description: t('Task type', '任务类型'),
+          description: 'Task type',
         },
       },
     },
   },
   {
     name: 'create_task',
-    description: t('Create new task', '创建新任务'),
+    description: 'Create new task',
     inputSchema: {
       type: 'object',
       properties: {
         type: {
           type: 'string',
           enum: ['habit', 'daily', 'todo', 'reward'],
-          description: t('Task type', '任务类型'),
+          description: 'Task type',
         },
         text: {
           type: 'string',
-          description: t('Task title', '任务标题'),
+          description: 'Task title',
         },
         notes: {
           type: 'string',
-          description: t('Task notes', '任务备注'),
+          description: 'Task notes',
         },
         difficulty: {
           type: 'number',
           enum: [0.1, 1, 1.5, 2],
-          description: t('Difficulty (0.1=easy, 1=medium, 1.5=hard, 2=very hard)', '难度 (0.1=简单, 1=中等, 1.5=困难, 2=极难)'),
+          description: 'Difficulty (0.1=easy, 1=medium, 1.5=hard, 2=very hard)',
         },
         priority: {
           type: 'number',
           enum: [0.1, 1, 1.5, 2],
-          description: t('Priority (0.1=low, 1=med, 1.5=high, 2=urgent)', '优先级 (0.1=低, 1=中, 1.5=高, 2=极高)'),
+          description: 'Priority (0.1=low, 1=med, 1.5=high, 2=urgent)',
         },
         checklist: {
           type: 'array',
@@ -110,17 +97,17 @@ const tools = [
             properties: {
               text: {
                 type: 'string',
-                description: t('Checklist item text', '清单项目文本'),
+                description: 'Checklist item text',
               },
               completed: {
                 type: 'boolean',
-                description: t('Completed status', '完成状态'),
+                description: 'Completed status',
                 default: false,
               },
             },
             required: ['text'],
           },
-          description: t('Checklist items', '清单项目'),
+          description: 'Checklist items',
         },
       },
       required: ['type', 'text'],
@@ -128,18 +115,18 @@ const tools = [
   },
   {
     name: 'score_task',
-    description: t('Score task / habit', '完成任务或记录习惯'),
+    description: 'Score task / habit',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
         direction: {
           type: 'string',
           enum: ['up', 'down'],
-          description: t('Direction (up=positive, down=negative, habits only)', '方向 (up=正向, down=负向，仅适用于习惯)'),
+          description: 'Direction (up=positive, down=negative, habits only)',
         },
       },
       required: ['taskId'],
@@ -147,25 +134,25 @@ const tools = [
   },
   {
     name: 'update_task',
-    description: t('Update task', '更新任务'),
+    description: 'Update task',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
         text: {
           type: 'string',
-          description: t('Task title', '任务标题'),
+          description: 'Task title',
         },
         notes: {
           type: 'string',
-          description: t('Task notes', '任务备注'),
+          description: 'Task notes',
         },
         completed: {
           type: 'boolean',
-          description: t('Completed flag', '是否完成'),
+          description: 'Completed flag',
         },
       },
       required: ['taskId'],
@@ -173,13 +160,13 @@ const tools = [
   },
   {
     name: 'delete_task',
-    description: t('Delete task', '删除任务'),
+    description: 'Delete task',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
       },
       required: ['taskId'],
@@ -187,7 +174,7 @@ const tools = [
   },
   {
     name: 'get_stats',
-    description: t('Get user stats', '获取用户统计信息'),
+    description: 'Get user stats',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -195,13 +182,13 @@ const tools = [
   },
   {
     name: 'buy_reward',
-    description: t('Buy reward', '购买奖励'),
+    description: 'Buy reward',
     inputSchema: {
       type: 'object',
       properties: {
         key: {
           type: 'string',
-          description: t('Reward key or ID', '奖励的key或ID'),
+          description: 'Reward key or ID',
         },
       },
       required: ['key'],
@@ -209,7 +196,7 @@ const tools = [
   },
   {
     name: 'get_inventory',
-    description: t('Get inventory', '获取物品清单'),
+    description: 'Get inventory',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -217,17 +204,17 @@ const tools = [
   },
   {
     name: 'cast_spell',
-    description: t('Cast spell', '施放技能'),
+    description: 'Cast spell',
     inputSchema: {
       type: 'object',
       properties: {
         spellId: {
           type: 'string',
-          description: t('Spell ID', '技能ID'),
+          description: 'Spell ID',
         },
         targetId: {
           type: 'string',
-          description: t('Target ID (optional)', '目标ID (可选)'),
+          description: 'Target ID (optional)',
         },
       },
       required: ['spellId'],
@@ -235,7 +222,7 @@ const tools = [
   },
   {
     name: 'get_tags',
-    description: t('Get tags list', '获取标签列表'),
+    description: 'Get tags list',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -243,13 +230,13 @@ const tools = [
   },
   {
     name: 'create_tag',
-    description: t('Create tag', '创建新标签'),
+    description: 'Create tag',
     inputSchema: {
       type: 'object',
       properties: {
         name: {
           type: 'string',
-          description: t('Tag name', '标签名称'),
+          description: 'Tag name',
         },
       },
       required: ['name'],
@@ -257,7 +244,7 @@ const tools = [
   },
   {
     name: 'get_pets',
-    description: '获取宠物列表',
+    description: 'Get pets list',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -265,17 +252,17 @@ const tools = [
   },
   {
     name: 'feed_pet',
-    description: '喂养宠物',
+    description: 'Feed pet',
     inputSchema: {
       type: 'object',
       properties: {
         pet: {
           type: 'string',
-          description: '宠物key',
+          description: 'Pet key',
         },
         food: {
           type: 'string',
-          description: '食物key',
+          description: 'Food key',
         },
       },
       required: ['pet', 'food'],
@@ -283,17 +270,17 @@ const tools = [
   },
   {
     name: 'hatch_pet',
-    description: '孵化宠物',
+    description: 'Hatch pet',
     inputSchema: {
       type: 'object',
       properties: {
         egg: {
           type: 'string',
-          description: '蛋的key',
+          description: 'Egg key',
         },
         hatchingPotion: {
           type: 'string',
-          description: '孵化药水的key',
+          description: 'Hatching potion key',
         },
       },
       required: ['egg', 'hatchingPotion'],
@@ -301,7 +288,7 @@ const tools = [
   },
   {
     name: 'get_mounts',
-    description: '获取坐骑列表',
+    description: 'Get mounts list',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -309,18 +296,18 @@ const tools = [
   },
   {
     name: 'equip_item',
-    description: '装备物品',
+    description: 'Equip item',
     inputSchema: {
       type: 'object',
       properties: {
         type: {
           type: 'string',
           enum: ['mount', 'pet', 'costume', 'equipped'],
-          description: '装备类型',
+          description: 'Equipment type',
         },
         key: {
           type: 'string',
-          description: '物品key',
+          description: 'Item key',
         },
       },
       required: ['type', 'key'],
@@ -328,7 +315,7 @@ const tools = [
   },
   {
     name: 'get_notifications',
-    description: '获取通知列表',
+    description: 'Get notifications',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -336,13 +323,13 @@ const tools = [
   },
   {
     name: 'read_notification',
-    description: '标记通知为已读',
+    description: 'Mark notification as read',
     inputSchema: {
       type: 'object',
       properties: {
         notificationId: {
           type: 'string',
-          description: '通知ID',
+          description: 'Notification ID',
         },
       },
       required: ['notificationId'],
@@ -350,31 +337,31 @@ const tools = [
   },
   {
     name: 'get_shop',
-    description: '获取商店物品',
+    description: 'Get shop items',
     inputSchema: {
       type: 'object',
       properties: {
         shopType: {
           type: 'string',
           enum: ['market', 'questShop', 'timeTravelersShop', 'seasonalShop'],
-          description: '商店类型',
+          description: 'Shop type',
         },
       },
     },
   },
   {
     name: 'buy_item',
-    description: '购买商店物品',
+    description: 'Buy shop item',
     inputSchema: {
       type: 'object',
       properties: {
         itemKey: {
           type: 'string',
-          description: '物品key',
+          description: 'Item key',
         },
         quantity: {
           type: 'number',
-          description: '购买数量',
+          description: 'Quantity',
           default: 1,
         },
       },
@@ -383,17 +370,17 @@ const tools = [
   },
   {
     name: 'add_checklist_item',
-    description: t('Add checklist item to task', '向任务添加清单项目'),
+    description: 'Add checklist item to task',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
         text: {
           type: 'string',
-          description: t('Checklist item text', '清单项目文本'),
+          description: 'Checklist item text',
         },
       },
       required: ['taskId', 'text'],
@@ -401,25 +388,25 @@ const tools = [
   },
   {
     name: 'update_checklist_item',
-    description: t('Update checklist item', '更新清单项目'),
+    description: 'Update checklist item',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
         itemId: {
           type: 'string',
-          description: t('Checklist item ID', '清单项目ID'),
+          description: 'Checklist item ID',
         },
         text: {
           type: 'string',
-          description: t('Checklist item text', '清单项目文本'),
+          description: 'Checklist item text',
         },
         completed: {
           type: 'boolean',
-          description: t('Completed status', '完成状态'),
+          description: 'Completed status',
         },
       },
       required: ['taskId', 'itemId'],
@@ -427,17 +414,17 @@ const tools = [
   },
   {
     name: 'delete_checklist_item',
-    description: t('Delete checklist item', '删除清单项目'),
+    description: 'Delete checklist item',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
         itemId: {
           type: 'string',
-          description: t('Checklist item ID', '清单项目ID'),
+          description: 'Checklist item ID',
         },
       },
       required: ['taskId', 'itemId'],
@@ -445,13 +432,13 @@ const tools = [
   },
   {
     name: 'get_task_checklist',
-    description: t('Get task checklist items', '获取任务清单项目'),
+    description: 'Get task checklist items',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
       },
       required: ['taskId'],
@@ -459,17 +446,17 @@ const tools = [
   },
   {
     name: 'score_checklist_item',
-    description: t('Score checklist item (mark complete/incomplete)', '为清单项目评分（标记完成/未完成）'),
+    description: 'Score checklist item (mark complete/incomplete)',
     inputSchema: {
       type: 'object',
       properties: {
         taskId: {
           type: 'string',
-          description: t('Task ID', '任务ID'),
+          description: 'Task ID',
         },
         itemId: {
           type: 'string',
-          description: t('Checklist item ID', '清单项目ID'),
+          description: 'Checklist item ID',
         },
       },
       required: ['taskId', 'itemId'],
@@ -477,14 +464,14 @@ const tools = [
   },
 ];
 
-// 注册工具列表处理器
+// Register the tool list handler
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: tools,
   };
 });
 
-// 注册工具调用处理器
+// Register the tool call handler
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
@@ -569,19 +556,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return await scoreChecklistItem(args.taskId, args.itemId);
       
       default:
-        throw new McpError(ErrorCode.MethodNotFound, `未知工具: ${name}`);
+        throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
     }
   } catch (error) {
     if (error instanceof McpError) {
       throw error;
     }
     
-    const errorMessage = error.response?.data?.message || error.message || '未知错误';
-    throw new McpError(ErrorCode.InternalError, `Habitica API 错误: ${errorMessage}`);
+    const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+    throw new McpError(ErrorCode.InternalError, `Habitica API error: ${errorMessage}`);
   }
 });
 
-// 工具实现函数
+// Tool implementations
 async function getUserProfile() {
   const response = await habiticaClient.get('/user');
   const user = response.data.data;
@@ -618,7 +605,7 @@ async function createTask(taskData) {
     content: [
       {
         type: 'text',
-        text: `成功创建任务: ${task.text} (ID: ${task.id})`,
+        text: `Created task: ${task.text} (ID: ${task.id})`,
       },
     ],
   };
@@ -628,10 +615,10 @@ async function scoreTask(taskId, direction = 'up') {
   const response = await habiticaClient.post(`/tasks/${taskId}/score/${direction}`);
   const result = response.data.data;
   
-  let message = `任务完成! `;
-  if (result.exp) message += `获得 ${result.exp} 经验值 `;
-  if (result.gp) message += `获得 ${result.gp} 金币 `;
-  if (result.lvl) message += `升级到 ${result.lvl} 级! `;
+  let message = `Task scored! `;
+  if (result.exp) message += `Earned ${result.exp} XP `;
+  if (result.gp) message += `Earned ${result.gp} gold `;
+  if (result.lvl) message += `Reached level ${result.lvl}! `;
   
   return {
     content: [
@@ -651,7 +638,7 @@ async function updateTask(taskId, updates) {
     content: [
       {
         type: 'text',
-        text: `成功更新任务: ${task.text}`,
+        text: `Updated task: ${task.text}`,
       },
     ],
   };
@@ -664,7 +651,7 @@ async function deleteTask(taskId) {
     content: [
       {
         type: 'text',
-        text: `成功删除任务 (ID: ${taskId})`,
+        text: `Deleted task (ID: ${taskId})`,
       },
     ],
   };
@@ -691,7 +678,7 @@ async function buyReward(key) {
     content: [
       {
         type: 'text',
-        text: `成功购买奖励! 剩余金币: ${result.gp}`,
+        text: `Bought reward! Gold remaining: ${result.gp}`,
       },
     ],
   };
@@ -718,7 +705,7 @@ async function castSpell(spellId, targetId) {
     content: [
       {
         type: 'text',
-        text: `成功施放技能: ${spellId}`,
+        text: `Cast skill: ${spellId}`,
       },
     ],
   };
@@ -745,7 +732,7 @@ async function createTag(name) {
     content: [
       {
         type: 'text',
-        text: `成功创建标签: ${tag.name} (ID: ${tag.id})`,
+        text: `Created tag: ${tag.name} (ID: ${tag.id})`,
       },
     ],
   };
@@ -768,7 +755,7 @@ async function feedPet(pet, food) {
   const response = await habiticaClient.post(`/user/feed/${pet}/${food}`);
   const result = response.data.data;
   
-  let message = `成功喂养宠物 ${pet}! `;
+  let message = `Fed pet ${pet}! `;
   if (result.message) {
     message += result.message;
   }
@@ -791,7 +778,7 @@ async function hatchPet(egg, hatchingPotion) {
     content: [
       {
         type: 'text',
-        text: `成功孵化宠物! 获得了 ${egg}-${hatchingPotion}`,
+        text: `Hatched pet: ${egg}-${hatchingPotion}`,
       },
     ],
   };
@@ -817,7 +804,7 @@ async function equipItem(type, key) {
     content: [
       {
         type: 'text',
-        text: `成功装备 ${type}: ${key}`,
+        text: `Equipped ${type}: ${key}`,
       },
     ],
   };
@@ -843,7 +830,7 @@ async function readNotification(notificationId) {
     content: [
       {
         type: 'text',
-        text: `成功标记通知为已读 (ID: ${notificationId})`,
+        text: `Marked notification as read (ID: ${notificationId})`,
       },
     ],
   };
@@ -870,7 +857,7 @@ async function buyItem(itemKey, quantity = 1) {
     content: [
       {
         type: 'text',
-        text: `成功购买 ${itemKey} x${quantity}! 剩余金币: ${result.gp}`,
+        text: `Bought ${itemKey} x${quantity}! Gold remaining: ${result.gp}`,
       },
     ],
   };
@@ -885,13 +872,13 @@ async function getTaskChecklist(taskId) {
     content: [
       {
         type: 'text',
-        text: t(`Task: ${task.text}\nChecklist items (${checklist.length}):`, `任务: ${task.text}\n清单项目 (${checklist.length}):`),
+        text: `Task: ${task.text}\nChecklist items (${checklist.length}):`,
       },
       {
         type: 'text',
         text: checklist.length > 0 
           ? checklist.map(item => `${item.completed ? '✓' : '○'} ${item.text} (ID: ${item.id})`).join('\n')
-          : t('No checklist items found', '未找到清单项目'),
+          : 'No checklist items found',
       },
     ],
   };
@@ -905,7 +892,7 @@ async function addChecklistItem(taskId, text) {
     content: [
       {
         type: 'text',
-        text: t(`Successfully added checklist item: ${item.text} (ID: ${item.id})`, `成功添加清单项目: ${item.text} (ID: ${item.id})`),
+        text: `Successfully added checklist item: ${item.text} (ID: ${item.id})`,
       },
     ],
   };
@@ -919,7 +906,7 @@ async function updateChecklistItem(taskId, itemId, updates) {
     content: [
       {
         type: 'text',
-        text: t(`Successfully updated checklist item: ${item.text}`, `成功更新清单项目: ${item.text}`),
+        text: `Successfully updated checklist item: ${item.text}`,
       },
     ],
   };
@@ -932,7 +919,7 @@ async function deleteChecklistItem(taskId, itemId) {
     content: [
       {
         type: 'text',
-        text: t(`Successfully deleted checklist item (ID: ${itemId})`, `成功删除清单项目 (ID: ${itemId})`),
+        text: `Successfully deleted checklist item (ID: ${itemId})`,
       },
     ],
   };
@@ -946,20 +933,20 @@ async function scoreChecklistItem(taskId, itemId) {
     content: [
       {
         type: 'text',
-        text: t(`Successfully scored checklist item: ${item.text} (completed: ${item.completed})`, `成功评分清单项目: ${item.text} (完成状态: ${item.completed})`),
+        text: `Successfully scored checklist item: ${item.text} (completed: ${item.completed})`,
       },
     ],
   };
 }
 
-// 启动服务器
+// Start the server
 async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Habitica MCP 服务器已启动');
+  console.error('Habitica MCP server started');
 }
 
 runServer().catch((error) => {
-  console.error('服务器启动失败:', error);
+  console.error('Server startup failed:', error);
   process.exit(1);
 }); 
